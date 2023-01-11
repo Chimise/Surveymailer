@@ -1,41 +1,67 @@
 import mongoose, {Schema, Types, Model} from "mongoose";
-import recipientSchema, {Recipient} from "./Recipient";
 
-interface Survey {
+interface Choices {
+    _id: Types.ObjectId;
+    action: string;
+    responses: number;
+    code: number;
+}
+
+export interface Survey {
     title: string;
     body: string;
     subject: string;
-    recipients: Array<Recipient>;
-    yes: number,
-    no: number,
-    user: Types.ObjectId,
-    dateSent: Date,
-    lastResponded: Date
+    shipper: string;
+    shipper_email?: string;
+    choices: Types.DocumentArray<Choices>,
+    user: Types.ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 
+
 const surveySchema = new Schema<Survey>({
-    title: String,
-    body: String,
-    subject: String,
-    recipients: [recipientSchema],
-    yes: {
-        type: Number,
-        default: 0
+    title: {
+        type: String,
+        required: true
     },
-    no: {
-        type: Number,
-        default: 0
+    shipper: {
+        type: String,
+        required: true
     },
+    shipper_email: String,
+    body: {
+        type: String,
+        required: true
+    },
+    subject: {
+        type: String,
+        required: true
+    },
+    choices: [new Schema({
+        action: {
+            type: String,
+            required: true
+        },
+        responses: {
+            type: Number,
+            default: 0
+        },
+        code: {
+            type: Number,
+            required: true
+        }
+    })],
     user: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'User'
-    },
-    dateSent: Date,
-    lastResponded: Date
+    }
 
+}, {
+    timestamps: true
 });
 
 //@ts-ignore
-export default (mongoose.model.Survey as Model<Survey>) || mongoose.model<Survey>('Survey', surveySchema);
+export default (mongoose.models.Survey as Model<Survey>) || mongoose.model<Survey>('Survey', surveySchema);
