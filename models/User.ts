@@ -2,13 +2,15 @@ import mongoose, {Schema, Types, Model, HydratedDocument} from "mongoose";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-interface User {
+export interface User {
     googleId?: string;
     email: string;
     name: string;
     password?: string;
-    provider: 'local' | 'google',
-    credits: number
+    provider: 'local' | 'google';
+    credits: number;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 interface UserMethods {
@@ -42,6 +44,8 @@ const userSchema = new Schema<User, UserModel, UserMethods>({
         type: Number,
         default: 0
     }
+}, {
+    timestamps: true
 })
 
 userSchema.pre('save', async function(next) {
@@ -57,7 +61,7 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.generateToken =  function (this: HydratedDocument<User>) {
     const _id = this._id;
-    const token = jwt.sign({_id}, process.env.JWT_SECRET!, {expiresIn: '7d'});
+    const token = jwt.sign({_id, googleId: this.googleId}, process.env.JWT_SECRET!, {expiresIn: '7d'});
     return token;
 }
 
@@ -77,4 +81,4 @@ userSchema.method('verifyPassword', async function (this: HydratedDocument<User>
 
 
 //@ts-ignore
-export default (mongoose.model.User as UserModel) || mongoose.model<User, UserModel>('User', userSchema);
+export default mongoose.models.User as UserModel || mongoose.model<User, UserModel>('User', userSchema);
