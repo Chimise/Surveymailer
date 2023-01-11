@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, {ConnectOptions} from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI
 
@@ -7,6 +7,8 @@ if (!MONGODB_URI) {
     'Please define the MONGODB_URI environment variable inside .env.local'
   )
 }
+
+export type Mongo =  typeof mongoose;
 
 declare global {
     var db: {
@@ -36,10 +38,7 @@ async function dbConnect() {
     const opts = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      bufferCommands: false,
-      bufferMaxEntries: 0,
-      useFindAndModify: false,
-      useCreateIndex: true,
+      bufferCommands: false
     }
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts);
