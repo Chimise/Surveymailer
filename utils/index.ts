@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import { ValidationError } from "yup";
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
 export const googleAuthUri = "https://accounts.google.com/o/oauth2/v2/auth";
-export const redirectURI = "/auth/google/callback";
+export const redirectURI = "/api/auth/google/callback";
 const googleClientId = process.env.GOOGLE_CLIENT_ID!;
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET!;
 
@@ -36,10 +36,7 @@ export const generateGoogleAuthURL = (serverUri: string) => {
     access_type: "offline",
     response_type: "code",
     prompt: "consent",
-    scope: [
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/userinfo.email",
-    ].join(","),
+    scope: 'openid email profile'
   };
 
   return `${googleAuthUri}?${new URLSearchParams(options).toString()}`;
@@ -55,12 +52,15 @@ export const getToken = async (code: string, serverUri: string) => {
     grant_type: "authorization_code",
   };
   const response = await fetch(url, {
+    method: 'POST',
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams(query),
   });
   if (!response.ok) {
+    const error = await response.json();
+    console.log(error);
     throw new Error("Request not succesfull");
   }
 
@@ -82,10 +82,12 @@ export const getGoogleUser = async (accessToken: string, idToken: string) => {
     },
   });
   if (!response.ok) {
+    const error = await response.json();
+    console.log(error);
     throw new Error("Request not succesful");
   }
   const data = (await response.json()) as {
-    sub: string;
+    id: string;
     name: string;
     given_name: string;
     family_name: string;
@@ -122,14 +124,14 @@ export function uuidValidateV4(uuid: string) {
 
 export const transporter = nodemailer.createTransport(
   {
-    service: 'gmail',
+    service: "gmail",
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
     auth: {
       user: process.env.MAIL_USERNAME,
       pass: process.env.MAIL_PASSWORD,
-    }
+    },
   },
   {
     from: "noreply@surveymailer.com",
@@ -150,14 +152,20 @@ export const generateEmailHtml = (
         <p>Please answer the following questions: </p>
         <p>${body}</p>
         <div>
-            ${choices.map((choice) => {
-              return `<a href=${getServerUrl(req)}/api/surveys/callback/${uuid}/${
-                choice.code
-              }>${choice.action}</a>`;
-            }).join('\n')}
+            ${choices
+              .map((choice) => {
+                return `<a href=${getServerUrl(
+                  req
+                )}/api/surveys/callback/${uuid}/${choice.code}>${
+                  choice.action
+                }</a>`;
+              })
+              .join("\n")}
         </div>
     </div>
     </body>
 </html>
     `;
 };
+
+

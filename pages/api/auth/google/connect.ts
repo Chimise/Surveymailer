@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { formatError, getServerUrl, generateGoogleAuthURL } from "../../../../utils";
+import { getServerUrl, generateGoogleAuthURL} from "../../../../utils";
 import noMatch from "../../../../controllers/noMatch";
 
 
@@ -7,7 +7,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const serverUri = getServerUrl(req);
     switch (req.method) {
         case 'GET':
-            return res.status(307).redirect(generateGoogleAuthURL(serverUri));
+            const url = generateGoogleAuthURL(serverUri);
+            return res.status(307).redirect(url);
         default:
             return noMatch(req, res);
     }
