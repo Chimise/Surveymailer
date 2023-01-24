@@ -2,7 +2,7 @@ import React from "react";
 import { Bars3BottomLeftIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import cn from 'classnames';
 import Link from "next/link";
-import Container from "../Container";
+import Container from "../../ui/Container";
 
 interface HeaderProps {
   onOpen: () => void;
