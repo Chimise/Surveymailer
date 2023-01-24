@@ -12,13 +12,11 @@ import { ExtendedApiRequest } from "../middlewares/auth";
 import Survey, { Survey as SurveyI } from "../models/Survey";
 import Recipient from "../models/Recipient";
 
+const MAX_ITEMS = 5;
+
 const createSurveySchema = yup.object({
   title: yup.string().required("Please enter the title of the survey"),
   shipper: yup.string().required("Your organization name is required"),
-  shipper_email: yup
-    .string()
-    .email("Please enter a your organization email address")
-    .default("noreply@surveymailer.com"),
   body: yup.string().required("Please enter the body of your message"),
   choices: yup
     .array(yup.string().required("Please enter a valid choice"))
@@ -37,9 +35,65 @@ const createSurveySchema = yup.object({
     .required("You must add a recipient"),
 });
 
+const findSurveySchema = yup.object({
+  _limit: yup.number().default(MAX_ITEMS),
+  _page: yup.number().default(1),
+  _sort: yup
+    .string()
+    .default("createdAt:desc")
+    .test({
+      name: "Test _Sort Query",
+      test(value) {
+        const fields = value.split(":");
+        if (fields.length > 2) {
+          throw new yup.ValidationError("_sort field not valid");
+        }
+
+        if (fields[1] && !["asc", "desc"].includes(fields[1].toLowerCase())) {
+          throw new yup.ValidationError("_sort field not valid");
+        }
+        return true;
+      },
+    }),
+});
+
+type SortOrder = -1 | 1;
+
+const getSortField = (value: string): [string, SortOrder] => {
+  let [field, order = "asc"] = value.split(":");
+  order = order.toLowerCase();
+  let sort: SortOrder = 1;
+  if(order === 'desc') {
+    sort = -1;
+  }
+  return [field, sort];
+};
+
+const paginate = (total: number, currentPage: number, limit: number) => {
+  const totalPages = Math.ceil(total / limit);
+  return {
+    currentPage,
+    skip: (currentPage - 1) * limit,
+    hasNext: totalPages > 1 && totalPages > currentPage,
+    hasPrevious: totalPages > 1 && currentPage > 1,
+    nextPage: totalPages > currentPage ? currentPage + 1 : currentPage,
+    previousPage: currentPage > 1 ? currentPage - 1 : currentPage,
+    totalPages,
+    total
+  }
+}
+
 export const find = async (req: ExtendedApiRequest, res: NextApiResponse) => {
-  const surveys = await Survey.find({ user: req.user.id });
-  res.json(surveys);
+  try {
+    const { _limit, _page, _sort } = await findSurveySchema.validate(req.query);
+    const [field, order] = getSortField(_sort);
+    const surveyCounts = await Survey.countDocuments({ user: req.user.id });
+    const {skip, ...data} = paginate(surveyCounts, _page, _limit);
+    const surveys = await Survey.find({ user: req.user.id }).limit(_limit).skip(skip).sort({[field]: order});
+    res.json({surveys, paginate: data});
+  } catch (error) {
+    return handleError(res, error);
+  }
 };
 
 export const findOne = async (
@@ -70,7 +124,7 @@ export const surveyCompleted = async (
 
   const recipient = await Recipient.findOne({ uuid });
   if (!recipient) {
-    return res.status(400).send(formatError("Data not found"));
+    return res.status(404).send(formatError("Data not found"));
   }
 
   if (recipient.responded) {
@@ -103,17 +157,18 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
       recipients,
       title,
       shipper,
-      shipper_email,
       body,
       choices,
       subject,
     } = await createSurveySchema.validate(req.body);
 
+    const shipper_email = `noreply@${shipper.toLowerCase()}.com`;
+
     const totalCost = recipients.length;
 
     if (req.user.credits < totalCost) {
       return res
-        .status(400)
+        .status(402)
         .send(
           formatError("You do not have enough credit to perform the operation")
         );
@@ -152,6 +207,7 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
       shipper,
       shipper_email,
       choices: updatedChoices,
+      recipients: recipients.length,
       title,
       body,
       subject,
@@ -179,4 +235,3 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
     handleError(res, error);
   }
 };
-

@@ -32,8 +32,13 @@ const loginSchema = yup.object({
     .required("Please enter your email"),
 });
 
-const authSchema = yup.object({
+const googleCallbackSchema = yup.object({
   code: yup.string().required("Code property must be included"),
+});
+
+const googleAuthSchema = yup.object({
+  access_token: yup.string().required("Access token parameter is required"),
+  id_token: yup.string().required("Id Token parameter is required"),
 });
 
 export const register = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -80,14 +85,44 @@ export const login = async (req: NextApiRequest, res: NextApiResponse) => {
 
 export const googleAuth = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const serverUri = getServerUrl(req);
-    const { code } = await authSchema.validate(req.body);
-    const { access_token, id_token } = await getToken(code, serverUri);
-    const { name, email, sub } = await getGoogleUser(access_token, id_token);
-    const user = new User({ name, email, googleId: sub, provider: "google" });
-    await user.save();
+    const { access_token, id_token } = await googleAuthSchema.validate(
+      req.body
+    );
+    const { name, email, id, picture, ...data } = await getGoogleUser(
+      access_token,
+      id_token
+    );
+    console.log(picture);
+    console.log(data);
+    let user = await User.findOne({ email, provider: "google" });
+    if (!user) {
+      user = new User({
+        name,
+        email,
+        googleId: id,
+        provider: "google",
+        imageUrl: picture,
+      });
+      await user.save();
+    }
+
     const token = user.generateToken();
     res.status(201).json({ user, token });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+export const googleCallback = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const serverUri = getServerUrl(req);
+    const { code } = await googleCallbackSchema.validate(req.query);
+    const { access_token, id_token } = await getToken(code, serverUri);
+    const query = new URLSearchParams({ access_token, id_token }).toString();
+    res.status(307).redirect(`/auth/google/callback?${query}`);
   } catch (error) {
     return handleError(res, error);
   }

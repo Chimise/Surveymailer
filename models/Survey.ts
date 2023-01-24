@@ -12,6 +12,7 @@ export interface Survey {
     body: string;
     subject: string;
     shipper: string;
+    recipients: number;
     shipper_email?: string;
     choices: Types.DocumentArray<Choices>,
     user: Types.ObjectId;
@@ -38,6 +39,10 @@ const surveySchema = new Schema<Survey>({
     subject: {
         type: String,
         required: true
+    },
+    recipients: {
+        type: Number,
+        default: 0
     },
     choices: [new Schema({
         action: {

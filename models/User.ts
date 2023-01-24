@@ -11,6 +11,8 @@ export interface User {
     credits: number;
     createdAt: Date;
     updatedAt: Date;
+    imageUrl?: string;
+    surveys?: number;
 }
 
 interface UserMethods {
@@ -42,11 +44,21 @@ const userSchema = new Schema<User, UserModel, UserMethods>({
     },
     credits: {
         type: Number,
-        default: 0
+        default: 10
+    },
+    imageUrl: {
+        type: String
     }
 }, {
     timestamps: true
 })
+
+userSchema.virtual('surveys', {
+    ref: 'Survey',
+    localField: '_id',
+    foreignField: 'user',
+    count: true
+});
 
 userSchema.pre('save', async function(next) {
     const user = this;
@@ -57,8 +69,6 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
-
-
 userSchema.methods.generateToken =  function (this: HydratedDocument<User>) {
     const _id = this._id;
     const token = jwt.sign({_id, googleId: this.googleId}, process.env.JWT_SECRET!, {expiresIn: '7d'});
@@ -66,7 +76,7 @@ userSchema.methods.generateToken =  function (this: HydratedDocument<User>) {
 }
 
 userSchema.method('toJSON', function (this: HydratedDocument<User>){
-    const userObject = this.toObject();
+    const userObject = this.toObject({virtuals: true});
     delete userObject.password;
     delete userObject.googleId;
     return userObject;
