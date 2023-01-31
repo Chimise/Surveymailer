@@ -7,6 +7,8 @@ export interface Recipient {
     uuid: string;
     choice: string;
     survey: Types.ObjectId;
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface RecipientMethods {
@@ -37,6 +39,8 @@ const recipientSchema = new Schema<Recipient, RecipientModel, RecipientMethods>(
     required: true,
     ref: 'Survey'
   }
+}, {
+  timestamps: true
 });
 
 

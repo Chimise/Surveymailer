@@ -4,6 +4,7 @@ import {
   EnvelopeIcon,
   EnvelopeOpenIcon,
 } from "@heroicons/react/20/solid";
+import {useRouter} from 'next/router';
 import type { Survey } from "../../../types";
 interface SurveyCardProps {
   survey: Survey;
@@ -24,8 +25,9 @@ const SurveyCard = ({
     month: "long",
   });
   const year = date.getFullYear();
+  const {push} = useRouter();
   return (
-    <div className="flex items-center py-4 px-6 bg-white">
+    <div onClick={() => push(`/dashboard/surveys/${_id}`)} className="flex items-center py-4 px-6 bg-white">
       <div className="flex-1 space-y-2">
         <div className="flex items-center text-black">
           <div className="flex-1 flex items-center space-x-4 pl-1.5">

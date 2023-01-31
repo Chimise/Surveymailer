@@ -20,7 +20,7 @@ export interface AuthResponse {
     user: User;
 }
 
-interface Choices {
+export interface Choice {
     _id: string;
     action: string;
     responses: number;
@@ -35,7 +35,16 @@ export interface Survey {
     recipients: number;
     shipper: string;
     shipper_email?: string;
-    choices: Choices[],
+    choices: Choice[],
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Recipient {
+    _id: string,
+    email: string,
+    responded: boolean,
+    choice: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -74,3 +83,5 @@ interface PaystackHandler {
 export interface Paystack {
     setup: (options: PaystackSetup) => PaystackHandler;
 }
+
+export type Option = {name: string, text: string};

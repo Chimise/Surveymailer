@@ -5,7 +5,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/20/solid";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error: false | string | undefined;
-  label: string;
+  label?: string;
 }
 
 const Input = ({ error, label, className, type, ...props }: InputProps) => {
@@ -18,9 +18,9 @@ const Input = ({ error, label, className, type, ...props }: InputProps) => {
 
   return (
     <label className="block group">
-      <span className="text-normal text-gray-800 text-sm group-focus-within:text-black mb-1 block">
+      {label && <span className="text-normal text-gray-800 text-sm group-focus-within:text-black mb-1 block">
         {label}
-      </span>
+      </span>}
       {isPassword ? (
         <div className="relative w-full">
           <input

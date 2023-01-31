@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import Link from 'next/link';
 import DashboardLayout from "../../components/common/DashboardLayout";
 import Container from "../../components/ui/Container";
-import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
 import SurveyCard from "../../components/common/SurveyCard";
 import Spinner from "../../components/ui/Spinner";
@@ -11,10 +10,13 @@ import { useGetSurveysQuery } from "../../store/queries/survey";
 import Error from "../../components/common/Error";
 import useUser from "../../hooks/useUser";
 import Pagination from "../../components/common/Pagination";
+import { Option } from "../../types";
+
+const selectOptions: Array<Option> = [{name: 'default', text: 'Sort'}, {name: 'createdAt', text: 'Created'}, {name: 'title', text: 'Title'}, {name: 'updatedAt', text: 'Modified'}, {name: 'recipients', text: 'Sent'}, {name: 'responses', text: 'Recieved'}]
 
 
 const DashboardPage = () => {
-  const [selected, setSelected] = useState("createdAt");
+  const [selected, setSelected] = useState<Option>(selectOptions[0]);
   const [isAsc, setIsAsc] = useState(true);
   const {query, isReady} = useRouter();
 
@@ -30,7 +32,14 @@ const DashboardPage = () => {
     return parseInt(page)
   }, [query, isReady]);
 
-  const { data, isLoading, error, refetch, isFetching } = useGetSurveysQuery(page, {
+  const sort = useMemo(() => {
+    if(selected.name === 'default') {
+      return ''
+    };
+    return `${selected.name}:${isAsc ? 'asc' : 'desc'}`;
+  }, [selected, isAsc])
+
+  const { data, isLoading, error, refetch, isFetching } = useGetSurveysQuery({page, sort}, {
     refetchOnMountOrArgChange: true
   });
   const user = useUser();
@@ -81,13 +90,7 @@ const DashboardPage = () => {
             <Select
               onSort={handleSort}
               isAsc={isAsc}
-              options={[
-                "createdAt",
-                "updatedAt",
-                "name",
-                "viewed",
-                "Hello World",
-              ]}
+              options={selectOptions}
               onChange={setSelected}
               value={selected}
             />

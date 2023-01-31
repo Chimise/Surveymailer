@@ -1,12 +1,14 @@
 import { NextApiResponse, NextApiRequest } from "next";
 import * as yup from "yup";
 import { v4 as uuidV4 } from "uuid";
+import { Types } from "mongoose";
 import {
   formatError,
   handleError,
   uuidValidateV4,
   transporter,
   generateEmailHtml,
+  paginate,
 } from "../utils";
 import { ExtendedApiRequest } from "../middlewares/auth";
 import Survey, { Survey as SurveyI } from "../models/Survey";
@@ -63,34 +65,53 @@ const getSortField = (value: string): [string, SortOrder] => {
   let [field, order = "asc"] = value.split(":");
   order = order.toLowerCase();
   let sort: SortOrder = 1;
-  if(order === 'desc') {
+  if (order === "desc") {
     sort = -1;
   }
   return [field, sort];
 };
-
-const paginate = (total: number, currentPage: number, limit: number) => {
-  const totalPages = Math.ceil(total / limit);
-  return {
-    currentPage,
-    skip: (currentPage - 1) * limit,
-    hasNext: totalPages > 1 && totalPages > currentPage,
-    hasPrevious: totalPages > 1 && currentPage > 1,
-    nextPage: totalPages > currentPage ? currentPage + 1 : currentPage,
-    previousPage: currentPage > 1 ? currentPage - 1 : currentPage,
-    totalPages,
-    total
-  }
-}
 
 export const find = async (req: ExtendedApiRequest, res: NextApiResponse) => {
   try {
     const { _limit, _page, _sort } = await findSurveySchema.validate(req.query);
     const [field, order] = getSortField(_sort);
     const surveyCounts = await Survey.countDocuments({ user: req.user.id });
-    const {skip, ...data} = paginate(surveyCounts, _page, _limit);
-    const surveys = await Survey.find({ user: req.user.id }).limit(_limit).skip(skip).sort({[field]: order});
-    res.json({surveys, paginate: data});
+    const { skip, ...data } = paginate(surveyCounts, _page, _limit);
+    if (field === "responses") {
+      const aggregatedData: Array<SurveyI> = await Survey.aggregate([
+        { $match: { user: new Types.ObjectId(req.user._id) } },
+        {
+          $addFields: {
+            totalResponses: {
+              $sum: "$choices.responses",
+            },
+          },
+        },
+        {
+          $sort: {
+            totalResponses: order,
+            _id: 1,
+          },
+        },
+        {
+          $project: {
+            totalResponses: 0,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: _limit,
+        },
+      ]);
+      return res.json({ surveys: aggregatedData, paginate: data });
+    }
+    const surveys = await Survey.find({ user: req.user.id })
+      .limit(_limit)
+      .skip(skip)
+      .sort({ [field]: order, _id: 1 });
+    res.json({ surveys, paginate: data });
   } catch (error) {
     return handleError(res, error);
   }
@@ -100,16 +121,33 @@ export const findOne = async (
   req: ExtendedApiRequest,
   res: NextApiResponse
 ) => {
-  const id = req.query.id;
+  const id = req.query.id as string;
   const survey = await Survey.findOne({ user: req.user.id, _id: id });
   if (!survey) {
     return res.status(404).send(formatError("Survey not found"));
   }
 
-  const recipients = await Recipient.find({ survey: survey._id });
-  const surveyObject = survey.toObject();
+  return res.json(survey);
+};
 
-  return res.json({ ...surveyObject, recipients });
+export const findRecipients = async (
+  req: ExtendedApiRequest,
+  res: NextApiResponse
+) => {
+  const id = req.query.id as string;
+  const { _limit, _page } = await findSurveySchema
+    .omit(["_sort"])
+    .validate(req.query);
+  const survey = await Survey.findOne({ user: req.user._id, _id: id });
+  if (!survey) {
+    return res.status(404).json(formatError("Survey not found"));
+  }
+  const recipientCount = await Recipient.countDocuments({ survey: survey._id });
+  const { skip, ...data } = paginate(recipientCount, _page, _limit);
+  const recipients = await Recipient.find({ survey: survey.id })
+    .limit(_limit)
+    .skip(skip);
+  return res.json({ recipients, paginate: data });
 };
 
 export const surveyCompleted = async (
@@ -153,14 +191,8 @@ export const surveyCompleted = async (
 
 export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
   try {
-    const {
-      recipients,
-      title,
-      shipper,
-      body,
-      choices,
-      subject,
-    } = await createSurveySchema.validate(req.body);
+    const { recipients, title, shipper, body, choices, subject } =
+      await createSurveySchema.validate(req.body);
 
     const shipper_email = `noreply@${shipper.toLowerCase()}.com`;
 

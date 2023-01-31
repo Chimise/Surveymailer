@@ -1,12 +1,14 @@
 import {
   createSlice,
-  createAsyncThunk,
   AnyAction,
   Action,
+  createAsyncThunk
 } from "@reduxjs/toolkit";
 import { fetcher, RequestError } from "../utils/client";
 import type { User, AuthResponse } from "../types";
 import { verifyPayment } from "./mutations/payment";
+
+export const createAppAsyncThunk = createAsyncThunk.withTypes<{rejectValue: string}>();
 
 type AuthState =
   | {
@@ -37,32 +39,41 @@ const initialState = {
   error: null,
 } as AuthState;
 
-export const loginUser = createAsyncThunk(
+export const loginUser = createAppAsyncThunk(
   "auth/signin",
-  async (input: Omit<Input, "name">) => {
-    const data = await fetcher<AuthResponse>("/api/auth/local/signin", {
-      body: input,
-    });
-    localStorage.setItem("token", data.token);
-    return data;
+  async (input: Omit<Input, "name">, {rejectWithValue}) => {
+    try {
+      const data = await fetcher<AuthResponse>("/api/auth/local/signin", {
+        body: input,
+      });
+      localStorage.setItem("token", data.token);
+      return data;
+    } catch (error) {
+      return rejectWithValue((error as RequestError).message);
+    }
+    
   }
 );
 
-export const registerUser = createAsyncThunk(
+export const registerUser = createAppAsyncThunk(
   "auth/register",
-  async (input: Input) => {
-    const data = await fetcher<AuthResponse>("/api/auth/local/register", {
-      body: input,
-    });
-    localStorage.setItem("token", data.token);
-    return data;
+  async (input: Input, {rejectWithValue}) => {
+    try {
+      const data = await fetcher<AuthResponse>("/api/auth/local/register", {
+        body: input,
+      });
+      localStorage.setItem("token", data.token);
+      return data;
+    } catch (error) {
+      return rejectWithValue((error as RequestError).message);
+    }
   }
 );
 
-export const loginOnMount = createAsyncThunk("auth/sigin", async () => {
+export const loginOnMount = createAppAsyncThunk("auth/sigin", async (undefined, {rejectWithValue}) => {
   const token = localStorage.getItem("token");
   if (!token) {
-    throw new RequestError("Token not found");
+    return rejectWithValue("Token not found");
   }
 
   try {
@@ -78,17 +89,22 @@ export const loginOnMount = createAsyncThunk("auth/sigin", async () => {
     };
   } catch (error) {
     localStorage.removeItem("token");
-    throw error;
+    return rejectWithValue((error as RequestError).message)
   }
 });
 
-export const googleLogIn = createAsyncThunk('auth/google', async (input: {access_token: string, id_token: string}) => {
-  const response = await fetcher<AuthResponse>('/api/auth/google', {
-    body: input
-  });
-  localStorage.setItem('token', response.token);
-  return response;
+export const googleLogIn = createAppAsyncThunk('auth/google', async (input: {access_token: string, id_token: string}, {rejectWithValue}) => {
+  try {
+    const response = await fetcher<AuthResponse>('/api/auth/google', {
+      body: input
+    });
+    localStorage.setItem('token', response.token);
+    return response;
+  } catch (error) {
+    return rejectWithValue((error as RequestError).message);
+  }
 })
+
 
 const isPendingAction = (action: AnyAction) => {
   const actions = (action.type as string).split('/');
@@ -96,7 +112,7 @@ const isPendingAction = (action: AnyAction) => {
 };
 
 interface RejectedAction extends Action {
-  error: string;
+  payload: RequestError
 }
 
 const isRejectedAction = (action: AnyAction): action is RejectedAction => {
@@ -130,9 +146,10 @@ const authSlice = createSlice({
       .addMatcher(isPendingAction, () => {
         return initialState;
       })
-      .addMatcher(isRejectedAction, (state, { error }) => {
+      .addMatcher(isRejectedAction, (state, { payload }) => {
+        const error = payload?.message || 'An error occured, try again'
         return {
-          error: error,
+          error,
           token: null,
           user: null,
         };

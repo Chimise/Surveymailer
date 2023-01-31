@@ -10,10 +10,12 @@ import { useAppDispatch } from "../../store";
 import { registerUser } from "../../store/auth";
 import AuthLayout from "../../components/common/AuthLayout";
 import GoogleIcon from "../../components/icons/GoogleIcon";
+import useAlert from "../../hooks/useAlert";
 
 const RegisterPage = () => {
   const dispatch = useAppDispatch();
   const {push} = useRouter();
+  const {handleShowAlert} = useAlert()
   const { values, touched, errors, handleChange, handleBlur, handleSubmit } =
     useFormik({
       initialValues: {
@@ -23,8 +25,11 @@ const RegisterPage = () => {
       },
       onSubmit: async (values) => {
         const data = await dispatch(registerUser(values));
-        if(data.meta.requestStatus === 'fulfilled') {
+        if(registerUser.fulfilled.match(data)) {
           push('/dashboard');
+        }else {
+          const message = data.payload || 'An error occured, try again'
+          handleShowAlert({type: 'error', message});
         }
       },
       validationSchema: yup.object({

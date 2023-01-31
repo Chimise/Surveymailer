@@ -74,6 +74,20 @@ export const getToken = async (code: string, serverUri: string) => {
   return data;
 };
 
+export const paginate = (total: number, currentPage: number, limit: number) => {
+  const totalPages = Math.ceil(total / limit);
+  return {
+    currentPage,
+    skip: (currentPage - 1) * limit,
+    hasNext: totalPages > 1 && totalPages > currentPage,
+    hasPrevious: totalPages > 1 && currentPage > 1,
+    nextPage: totalPages > currentPage ? currentPage + 1 : currentPage,
+    previousPage: currentPage > 1 ? currentPage - 1 : currentPage,
+    totalPages,
+    total,
+  };
+};
+
 export const getGoogleUser = async (accessToken: string, idToken: string) => {
   const url = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`;
   const response = await fetch(url, {
@@ -122,12 +136,12 @@ export function uuidValidateV4(uuid: string) {
   return uuidValidate(uuid) && uuidVersion(uuid) === 4;
 }
 
+
 export const transporter = nodemailer.createTransport(
   {
     service: "gmail",
     host: "smtp.gmail.com",
     port: 465,
-    secure: true,
     auth: {
       user: process.env.MAIL_USERNAME,
       pass: process.env.MAIL_PASSWORD,

@@ -1,28 +1,22 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import Link from "next/link";
 import cn from "classnames";
 import { useFormik } from "formik";
 import * as yup from 'yup';
 import { useRouter} from "next/router";
-import { useSelector } from "react-redux";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import AuthLayout from "../../components/common/AuthLayout";
 import GoogleIcon from "../../components/icons/GoogleIcon";
 import { loginUser } from "../../store/auth";
-import { useAppDispatch, RootState } from "../../store";
+import { useAppDispatch} from "../../store";
+import useAlert from "../../hooks/useAlert";
 
 
 const SignInPage = () => {
   const dispatch = useAppDispatch();
   const {push} = useRouter();
-  const {token} = useSelector((state: RootState) => state.auth);
-
-  useEffect(() => {
-    if(token) {
-      push('/dashboard');
-    }
-  }, [token, push]);
+  const {handleShowAlert} = useAlert()
 
   const {values, touched, errors, handleChange, handleBlur, handleSubmit} = useFormik({
     initialValues: {
@@ -31,8 +25,13 @@ const SignInPage = () => {
     },
     async onSubmit(values) {
         const data = await dispatch(loginUser(values));
-        if(data.meta.requestStatus === 'fulfilled') {
+        if(loginUser.fulfilled.match(data)) {
           push('/dashboard');
+        }
+        else {
+          const message = data.payload || 'An error occured, try again';
+           handleShowAlert({message, type: 'error'});
+        
         }
     },
     validationSchema: yup.object({
