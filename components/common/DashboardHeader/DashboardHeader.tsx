@@ -2,6 +2,9 @@ import React from "react";
 import { Bars3BottomLeftIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import cn from 'classnames';
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useAppDispatch } from "../../../store";
+import { logout } from "../../../store/auth";
 import Container from "../../ui/Container";
 
 interface HeaderProps {
@@ -10,6 +13,12 @@ interface HeaderProps {
 }
 
 const Header = ({ onOpen, open}: HeaderProps) => {
+  const router = useRouter()
+  const dispatch = useAppDispatch();
+  const handleLogout = async () => {
+    await router.push('/auth/signin');
+    dispatch(logout());
+  }
   return (
     <header className={cn("h-14 z-[1000] fixed top-0 w-full transition-colors duration-150 bg-primary")}>
       <Container className="flex justify-between h-full items-center">
@@ -28,7 +37,8 @@ const Header = ({ onOpen, open}: HeaderProps) => {
           </button>
         <nav className={cn("hidden sm:flex sm:space-x-6 sm:justify-end transition-colors duration-150 flex-1 text-white")}>
           <Link href="/dashboard/fund" className="text-inherit hover:text-secondary" >Add Credits</Link>
-          <Link href="/auth/signin" className="text-inherit hover:text-secondary">Logout</Link>
+          <Link href="/dashboard/surveys/create" className="text-inherit hover:text-secondary" >Create Survey</Link>
+          <button onClick={handleLogout} className="text-inherit focus:outline-none hover:text-secondary">Logout</button>
         </nav>
       </Container>
     </header>

@@ -4,7 +4,8 @@ import Header from "../DashboardHeader";
 import Container from "../../ui/Container";
 import Alert from '../../ui/Alert';
 import useAlert from "../../../hooks/useAlert";
-
+import SurveyPreview from "../SurveyPreview";
+import useModal from "../../../hooks/useModal";
 
 
 interface LayoutProps {
@@ -14,6 +15,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const {show, message, type, handleDismissAlert, timeout} = useAlert();
+  const {isVisible: modalIsVisible, close, data} = useModal();
 
   const toggleOpenHandler = () => {
     console.log("It is working");
@@ -28,9 +30,11 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <>
+
       <MobileDrawer onClose={closeHandler} open={isVisible} />
       <Header open={isVisible} onOpen={toggleOpenHandler} />
-      <Alert show={show} message={message} type={type} onDismiss={handleDismissAlert} timeout={timeout} />
+      <SurveyPreview show={modalIsVisible} onClose={close} data={data!} />
+      <Alert show={show} message={message!} type={type} onDismiss={handleDismissAlert} timeout={timeout} />
       <div className="h-px min-h-screen flex flex-col overflow-x-hidden bg-slate-100 overflow-y-auto">
         <div className="h-14 w-full"/>
         <main className="flex-1">{children}</main>

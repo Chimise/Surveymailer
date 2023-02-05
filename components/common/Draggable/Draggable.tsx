@@ -14,6 +14,8 @@ interface DraggableProps {
   onDelete: (id: number) => void;
 }
 
+const placeholders = ['Very Unhappy', 'Unhappy', 'Neutral', 'Happy', 'Very Happy']
+
 const Draggable = ({ action: {value, id, error, touched}, constraints, onChange, onBlur, onDelete }: DraggableProps) => {
   const controls = useDragControls();
   const pointerDownHandler = (
@@ -72,7 +74,7 @@ const Draggable = ({ action: {value, id, error, touched}, constraints, onChange,
               </div>
             </Disclosure.Button>
             <Disclosure.Panel className="px-6 py-5 md:px-10 text-sm text-gray-500">
-              <Input error={touched && error!} onChange={(evt) => onChange(evt, id)} value={value} onBlur={() => onBlur(id)} />
+              <Input error={touched && error!} className='text-black' placeholder={placeholders[id % placeholders.length]} onChange={(evt) => onChange(evt, id)} value={value} onBlur={() => onBlur(id)} />
             </Disclosure.Panel>
           </>
         )}

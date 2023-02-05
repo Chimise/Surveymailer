@@ -1,7 +1,9 @@
 import { Fragment } from "react";
 import { Transition } from "@headlessui/react";
 import Link from "next/link";
-import Container from "../../ui/Container";
+import { useRouter } from "next/router";
+import { useAppDispatch } from "../../../store";
+import { logout } from "../../../store/auth";
 
 interface MobileDrawerProps {
   open: boolean;
@@ -9,6 +11,14 @@ interface MobileDrawerProps {
 }
 
 const MobileDrawer = ({ open, onClose }: MobileDrawerProps) => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    onClose()
+    await router.push('/auth/signin');
+    dispatch(logout());
+  }
   return (
     <Transition show={open} as={Fragment}>
       <div className="fixed inset-0 z-50 overflow-hidden md:hidden">
@@ -37,22 +47,28 @@ const MobileDrawer = ({ open, onClose }: MobileDrawerProps) => {
               leaveFrom="opacity-1"
               leaveTo="opacity-0"
             >
-              <div className="pointer-events-auto bg-white relative top-[100px] left-[50%] -translate-x-[50%] h-auto w-[85%] max-w-sm rounded-lg shadow-sm py-8 px-7">
+              <div className="pointer-events-auto bg-gray-200 relative top-[100px] left-[50%] -translate-x-[50%] h-auto w-[85%] max-w-sm rounded-lg shadow-sm py-8 px-7">
                 <div className="flex flex-col items-start space-y-5">
                   <Link
                     onClick={onClose}
-                    href="/auth/signin"
+                    href="/dashboard/fund"
                     className="text-slate-900 hover:text-secondary"
                   >
                     Add Credits
                   </Link>
                   <Link
                     onClick={onClose}
-                    href="/auth/signup"
+                    href="/dashboard/surveys/create"
                     className="text-slate-900 hover:text-secondary"
                   >
-                    Logout
+                    Create Survey
                   </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-slate-900 focus:outline-none hover:text-secondary"
+                  >
+                    Logout
+                  </button>
                 </div>
               </div>
             </Transition.Child>

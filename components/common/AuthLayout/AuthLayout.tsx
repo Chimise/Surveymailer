@@ -11,7 +11,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
         onDismiss={handleDismissAlert}
         show={show}
         type={type}
-        message={message}
+        message={message!}
         timeout={timeout}
       />
       <div className="flex flex-col w-screen h-screen">
