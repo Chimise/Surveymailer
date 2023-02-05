@@ -71,7 +71,7 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.generateToken =  function (this: HydratedDocument<User>) {
     const _id = this._id;
-    const token = jwt.sign({_id, googleId: this.googleId}, process.env.JWT_SECRET!, {expiresIn: '7d'});
+    const token = jwt.sign({_id, googleId: this.googleId}, process.env.JWT_SECRET!, {expiresIn: '24h'});
     return token;
 }
 

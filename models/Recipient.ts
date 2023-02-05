@@ -6,6 +6,7 @@ export interface Recipient {
     responded: boolean,
     uuid: string;
     choice: string;
+    sent: boolean;
     survey: Types.ObjectId;
     createdAt: string;
     updatedAt: string;
@@ -32,6 +33,10 @@ const recipientSchema = new Schema<Recipient, RecipientModel, RecipientMethods>(
   },
   uuid: {
     type: String,
+    required: true
+  },
+  sent: {
+    type: Boolean,
     required: true
   },
   survey: {
