@@ -46,3 +46,9 @@ export const fetcher = async <T>(
     throw err;
   }
 };
+
+
+export const getNameInital = (name: string) => {
+  const [firstName, lastName] = name.split(' ');
+return `${firstName[0]} ${lastName[0] || firstName[0]}`;
+}

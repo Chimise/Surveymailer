@@ -1,6 +1,6 @@
 import React from "react";
+import type { IconProps } from ".";
 
-interface IconProps extends React.SVGAttributes<SVGSVGElement> {}
 
 const GoogleIcon = (props: IconProps) => {
   return (
