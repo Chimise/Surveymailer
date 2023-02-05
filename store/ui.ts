@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { type } from "os";
-import { boolean, string } from "yup";
+import { SurveyPreviewData } from "../types";
 
 interface AlertState {
   message: string | null;
@@ -9,8 +8,14 @@ interface AlertState {
   timeout: number;
 }
 
+interface ModalState {
+  isVisible: boolean;
+  data: SurveyPreviewData | null;
+}
+
 interface InitialUiState {
   alert: AlertState;
+  modal: ModalState;
 }
 
 const initialAlertState: AlertState = {
@@ -20,11 +25,17 @@ const initialAlertState: AlertState = {
   timeout: 4000,
 };
 
+const initialState: InitialUiState = {
+  alert: initialAlertState,
+  modal: {
+    isVisible: false,
+    data: null
+  }
+}
+
 const uiSlice = createSlice({
   name: "ui",
-  initialState: {
-    alert: initialAlertState,
-  } as InitialUiState,
+  initialState,
   reducers: {
     showAlert: (
       state,
@@ -37,24 +48,35 @@ const uiSlice = createSlice({
       }>
     ) => {
       return {
+        ...state,
         alert: {
           show: true,
           message,
           type,
           timeout,
         },
+        
       };
     },
     dismissAlert: (state) => {
       return {
+        ...state,
         alert: {
           ...initialAlertState,
           type: state.alert.type
         }
       }
     },
+    showModal: (state, {payload}: PayloadAction<SurveyPreviewData>) => {
+      state.modal.isVisible = true;
+      state.modal.data = payload;
+    },
+    closeModal: (state) => {
+      state.modal.isVisible = false;
+      state.modal.data = null;
+    }
   },
 });
 
-export const { dismissAlert, showAlert } = uiSlice.actions;
+export const { dismissAlert, showAlert, showModal, closeModal } = uiSlice.actions;
 export default uiSlice.reducer;

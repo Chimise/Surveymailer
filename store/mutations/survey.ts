@@ -1,5 +1,5 @@
 import rootApi from "../api";
-import { Survey } from "../../types";
+import { Survey, User } from "../../types";
 
 type SurveyInput = Pick<Survey, 'body'|'shipper'|'subject'|'title'> & {
     choices: string[];
@@ -8,7 +8,7 @@ type SurveyInput = Pick<Survey, 'body'|'shipper'|'subject'|'title'> & {
 
 const extendedSurveyApi = rootApi.injectEndpoints({
     endpoints: (builder) => ({
-        sendSurvey: builder.mutation<Survey, SurveyInput>({
+        sendSurvey: builder.mutation<{survey: Survey, user: User}, SurveyInput>({
             query: (body) => ({
                 url: 'surveys',
                 body,
@@ -25,3 +25,4 @@ const extendedSurveyApi = rootApi.injectEndpoints({
 })
 
 export const {useSendSurveyMutation} = extendedSurveyApi;
+export const {sendSurvey}  = extendedSurveyApi.endpoints;

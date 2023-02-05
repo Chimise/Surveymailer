@@ -7,6 +7,7 @@ import {
 import { fetcher, RequestError } from "../utils/client";
 import type { User, AuthResponse } from "../types";
 import { verifyPayment } from "./mutations/payment";
+import { sendSurvey } from "./mutations/survey";
 
 export const createAppAsyncThunk = createAsyncThunk.withTypes<{rejectValue: string}>();
 
@@ -46,7 +47,7 @@ export const loginUser = createAppAsyncThunk(
       const data = await fetcher<AuthResponse>("/api/auth/local/signin", {
         body: input,
       });
-      localStorage.setItem("token", data.token);
+      sessionStorage.setItem("token", data.token);
       return data;
     } catch (error) {
       return rejectWithValue((error as RequestError).message);
@@ -62,7 +63,7 @@ export const registerUser = createAppAsyncThunk(
       const data = await fetcher<AuthResponse>("/api/auth/local/register", {
         body: input,
       });
-      localStorage.setItem("token", data.token);
+      sessionStorage.setItem("token", data.token);
       return data;
     } catch (error) {
       return rejectWithValue((error as RequestError).message);
@@ -71,7 +72,7 @@ export const registerUser = createAppAsyncThunk(
 );
 
 export const loginOnMount = createAppAsyncThunk("auth/sigin", async (undefined, {rejectWithValue}) => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   if (!token) {
     return rejectWithValue("Token not found");
   }
@@ -88,7 +89,7 @@ export const loginOnMount = createAppAsyncThunk("auth/sigin", async (undefined, 
       token,
     };
   } catch (error) {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     return rejectWithValue((error as RequestError).message)
   }
 });
@@ -98,12 +99,13 @@ export const googleLogIn = createAppAsyncThunk('auth/google', async (input: {acc
     const response = await fetcher<AuthResponse>('/api/auth/google', {
       body: input
     });
-    localStorage.setItem('token', response.token);
+    sessionStorage.setItem('token', response.token);
     return response;
   } catch (error) {
     return rejectWithValue((error as RequestError).message);
   }
 })
+
 
 
 const isPendingAction = (action: AnyAction) => {
@@ -134,7 +136,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: () => {
-      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
       return initialState;
     },
   },
@@ -142,6 +144,9 @@ const authSlice = createSlice({
     builder
     .addMatcher(verifyPayment.matchFulfilled, (state, {payload}) => {
       state.user = payload;
+    })
+    .addMatcher(sendSurvey.matchFulfilled, (state, {payload}) => {
+      state.user = payload.user;
     })
       .addMatcher(isPendingAction, () => {
         return initialState;

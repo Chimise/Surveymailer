@@ -25,6 +25,4 @@ export type Dispatch = typeof store.dispatch;
 
 export const useAppDispatch: () => Dispatch = useDispatch;
 
-export const createAppAsyncThunk = createAsyncThunk.withTypes<{state: RootState, dispatch: Dispatch, rejectValue: RequestError}>();
-
 export default store;

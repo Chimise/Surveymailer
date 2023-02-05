@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { SurveyChoice } from "../types";
 
 interface SurveyActions {
-    values: Array<{id: number; value: string; error: string | null; touched: boolean}>
+    values: Array<SurveyChoice>
 }
 
 let count = 0;
@@ -55,10 +56,14 @@ const formSlice = createSlice({
             })
 
             state.values = newState;
+        },
+        handleReset: () => {
+            count = 0;
+            return {values: []}
         }
     }
 })
 
 
-export const {handleBlur, handleChange, handleCreate, handleDelete, handleReorder} = formSlice.actions
+export const {handleBlur, handleChange, handleCreate, handleDelete, handleReorder, handleReset} = formSlice.actions
 export default formSlice.reducer;
