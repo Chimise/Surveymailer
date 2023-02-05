@@ -1,6 +1,5 @@
 import React from "react";
 import Head from "next/head";
-import { Inter, Roboto } from "@next/font/google";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 import Image from 'next/image'
 import cn from 'classnames';
@@ -9,8 +8,6 @@ import Container from "../components/ui/Container";
 import Button from '../components/ui/Button';
 import CustomList from "../components/ui/CustomList";
 
-
-const inter = Inter({ subsets: ["latin"] });
 
 const HomePage = () => {
   return (
@@ -24,7 +21,7 @@ const HomePage = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <section className={cn('bg-primary py-10 text-center', inter.className)}>
+      <section className={cn('bg-primary py-10 text-center')}>
         <div className="space-y-6 mx-auto w-[70%] max-w-[500px] text-white">
           <div className="text-xl font-medium flex items-center justify-center">
             <span>Send</span>

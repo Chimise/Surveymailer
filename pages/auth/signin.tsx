@@ -18,7 +18,7 @@ const SignInPage = () => {
   const {push} = useRouter();
   const {handleShowAlert} = useAlert()
 
-  const {values, touched, errors, handleChange, handleBlur, handleSubmit} = useFormik({
+  const {values, touched, errors, handleChange, handleBlur, handleSubmit, isSubmitting} = useFormik({
     initialValues: {
       email: '',
       password: ''
@@ -69,7 +69,7 @@ const SignInPage = () => {
             <Input type="email" label="Email address" name='email' onChange={handleChange} onBlur={handleBlur} value={values.email} error={touched.email && errors.email} />
             <Input type="password" label="Password" name='password' onChange={handleChange} onBlur={handleBlur} value={values.password} error={touched.password && errors.password} />
             <div className="py-2">
-              <Button type="submit" full>
+              <Button type="submit" isLoading={isSubmitting} full>
                 Sign in
               </Button>
             </div>

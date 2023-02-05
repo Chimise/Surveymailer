@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import type { AppProps } from "next/app";
 import { NextPage } from "next";
 import { Provider } from "react-redux";
@@ -18,6 +18,7 @@ type App = {
 const defaultLayout = (children: React.ReactNode) => children;
 
 export default function App({ Component, pageProps }: App) {
+  
   const getLayout = Component.getLayout || defaultLayout;
   const isAuth = Component.isAuth;
   return (

@@ -1,6 +1,7 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import { useRouter } from "next/router";
 import DashboardLayout from "../../../components/common/DashboardLayout";
 import DraggableField from "../../../components/common/DraggableField";
 import Input from "../../../components/ui/Input";
@@ -10,19 +11,21 @@ import Button from "../../../components/ui/Button";
 import { useSendSurveyMutation } from "../../../store/mutations/survey";
 import useAlert from "../../../hooks/useAlert";
 import { ErrorObj } from "../../../types";
+import useModal from "../../../hooks/useModal";
+import type {User, Survey} from '../../../types';
 
 const emailSchema = yup
   .array(yup.string().trim().email("Please enter a valid email").required())
   .required("Field is required");
 
 const surveyValidationSchema = yup.object({
-  title: yup.string().required("Please enter a title for your survey"),
+  title: yup.string().required("Please enter a title for your survey").max(100, 'This field should not be more than 100 characters'),
   shipper: yup
     .string()
     .required("Please enter your business or organization name"),
   body: yup
     .string()
-    .required("Please enter your email body")
+    .required("Please enter your survey email body")
     .min(10, "Your email body should be at least 10 characters"),
   subject: yup.string().required("Please enter your email subject"),
   recipients: yup
@@ -37,10 +40,12 @@ const surveyValidationSchema = yup.object({
 });
 
 const CreateSurveyPage = () => {
-  const { isValid, values: choices } = useSurveyActions();
+  const {push} = useRouter();
+  const { isValid, values: choices, reset} = useSurveyActions();
+  const {open} = useModal()
   const { handleShowAlert } = useAlert();
   const [sendSurvey] = useSendSurveyMutation();
-  const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
+  const { values, errors, touched, handleBlur, handleChange, handleSubmit, validateForm, isSubmitting } =
     useFormik({
       initialValues: {
         title: "",
@@ -57,13 +62,15 @@ const CreateSurveyPage = () => {
           const recipients = await emailSchema.validate(
             values.recipients.split(",")
           );
-          const data = await sendSurvey({
+          const data  = await sendSurvey({
             ...values,
             recipients,
             choices,
-          }).unwrap();
-          handleShowAlert({ message: "Survey sent succesfully" });
+          }).unwrap()
           resetForm();
+          reset();
+          push(`/dashboard/surveys/${data.survey._id}`);
+
         } catch (error) {
           console.log(error);
           const message =
@@ -75,6 +82,18 @@ const CreateSurveyPage = () => {
       validationSchema: surveyValidationSchema,
     });
 
+    const surveyPreviewHandler = async () => {
+     try {
+      const errors = await validateForm();
+      if(Object.keys(errors).length === 0 && isValid) {
+        open({...values, choices});
+      }
+     } catch (error) {
+        console.log(error);
+     }
+    }
+
+
   return (
     <div className="w-full h-full pt-32 pb-10">
       <div className="flex items-center justify-center md:h-full">
@@ -84,6 +103,7 @@ const CreateSurveyPage = () => {
               <Input
                 label="Survey Title"
                 name="title"
+                placeholder="Campaign #1"
                 error={touched.title && errors.title}
                 value={values.title}
                 onChange={handleChange}
@@ -93,6 +113,7 @@ const CreateSurveyPage = () => {
             <div className="w-full md:w-1/2 px-4 py-2">
               <Input
                 label="Organization Name"
+                placeholder="SurveyMailer"
                 name="shipper"
                 error={touched.shipper && errors.shipper}
                 value={values.shipper}
@@ -104,6 +125,7 @@ const CreateSurveyPage = () => {
               <Input
                 label="Email Subject"
                 name="subject"
+                placeholder="How can we make our delivery service work for you"
                 error={touched.subject && errors.subject}
                 value={values.subject}
                 onChange={handleChange}
@@ -114,6 +136,7 @@ const CreateSurveyPage = () => {
               <TextArea
                 label="Email Body"
                 name="body"
+                placeholder="How satisfied are you with our delivery services"
                 error={touched.body && errors.body}
                 value={values.body}
                 onChange={handleChange}
@@ -124,6 +147,7 @@ const CreateSurveyPage = () => {
               <TextArea
                 label="Recipients"
                 name="recipients"
+                placeholder="Johndoe@surveymailer.com, example@surveymailer.com"
                 error={touched.recipients && errors.recipients}
                 value={values.recipients}
                 onChange={handleChange}
@@ -133,12 +157,13 @@ const CreateSurveyPage = () => {
             <div className="w-full px-4 py-2">
               <DraggableField />
             </div>
-            <div className="w-full p-4 flex md:justify-end">
-              <div className="w-full md:w-auto">
-                <Button type="submit" full>
+            <div className="w-full p-4 flex items-center justify-between md:justify-end md:space-x-5">
+              <Button variant="outlined" type='button' onClick={surveyPreviewHandler}>
+                Preview
+              </Button>
+                <Button isLoading={isSubmitting} type="submit">
                   Send Survey
                 </Button>
-              </div>
             </div>
           </form>
         </div>

@@ -16,7 +16,7 @@ const RegisterPage = () => {
   const dispatch = useAppDispatch();
   const {push} = useRouter();
   const {handleShowAlert} = useAlert()
-  const { values, touched, errors, handleChange, handleBlur, handleSubmit } =
+  const { values, touched, errors, handleChange, handleBlur, handleSubmit, isSubmitting } =
     useFormik({
       initialValues: {
         name: "",
@@ -99,7 +99,7 @@ const RegisterPage = () => {
               error={touched.password && errors.password}
             />
             <div className="py-2">
-              <Button type="submit" full>
+              <Button type="submit" isLoading={isSubmitting} full>
                 Sign up
               </Button>
             </div>

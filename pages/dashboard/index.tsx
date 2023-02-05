@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from 'next/link';
 import DashboardLayout from "../../components/common/DashboardLayout";
@@ -10,7 +10,10 @@ import { useGetSurveysQuery } from "../../store/queries/survey";
 import Error from "../../components/common/Error";
 import useUser from "../../hooks/useUser";
 import Pagination from "../../components/common/Pagination";
+import CustomImage from "../../components/common/CustomImage";
 import { Option } from "../../types";
+import { getNameInital } from "../../utils/client";
+import pusher from '../../pusher/client';
 
 const selectOptions: Array<Option> = [{name: 'default', text: 'Sort'}, {name: 'createdAt', text: 'Created'}, {name: 'title', text: 'Title'}, {name: 'updatedAt', text: 'Modified'}, {name: 'recipients', text: 'Sent'}, {name: 'responses', text: 'Recieved'}]
 
@@ -55,7 +58,7 @@ const DashboardPage = () => {
         <Container className="bg-white -mt-10 rounded-md shadow-sm" narrow>
           <div className="flex flex-col items-center p-5 space-y-5 md:flex-row md:justify-between md:space-y-0">
             <div className="flex flex-col items-center space-y-2 md:flex-row md:space-x-3 md:space-y-0">
-              <div className="rounded-full w-16 h-16 bg-gray-200" />
+              <CustomImage priority src={user?.imageUrl} fallbackText={getNameInital(user?.name!)} alt='profile image' /> 
               <div className="text-center md:text-left text-gray-500 font-medium text-sm">
                 <p className="">Welcome back,</p>
                 <p className="text-lg font-bold text-black">{user?.name}</p>

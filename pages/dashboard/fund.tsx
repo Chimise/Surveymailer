@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import DashboardLayout from "../../components/common/DashboardLayout";
 import { useFormik } from "formik";
+import { useRouter } from "next/router";
 import * as yup from "yup";
 import Script from "next/script";
 import Input from "../../components/ui/Input";
@@ -15,14 +16,15 @@ declare global {
 
 const FundPage = () => {
   const [showPayment, setShowPayment] = useState(true);
+  const {push} = useRouter();
   const user = useUser();
   const [sendPaymentRequest, {data}] = useVerifyPaymentMutation()
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit } =
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting } =
     useFormik({
       initialValues: {
         amount: "",
       },
-      onSubmit({ amount }, {resetForm}) {
+      onSubmit({ amount,  }, {setSubmitting}) {
         setShowPayment(false);
         const handler = PaystackPop.setup({
           key: process.env.NEXT_PUBLIC_PAYSTACK!,
@@ -31,10 +33,14 @@ const FundPage = () => {
           callback: ({ reference }) => {
             setShowPayment(true);
             sendPaymentRequest(reference).unwrap().then(response => {
-              resetForm();
+              setSubmitting(false);
+              push('/dashboard');
+            }).catch(() => {
+              setSubmitting(false);
             })
           },
           onClose: () => {
+            setSubmitting(false);
             setShowPayment(true);
             
           },
@@ -65,7 +71,7 @@ const FundPage = () => {
               onBlur={handleBlur}
             />
             <div className="flex justify-end">
-              <Button type="submit">Submit</Button>
+              <Button type="submit" isLoading={isSubmitting}>Submit</Button>
             </div>
           </form>
         </div>
