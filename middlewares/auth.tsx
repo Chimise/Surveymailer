@@ -1,9 +1,10 @@
-import { NextApiRequest, NextApiResponse, NextApiHandler } from "next"
+import { NextApiRequest, NextApiResponse} from "next"
 import jwt from 'jsonwebtoken';
 import User, {User as UserI} from "../models/User";
 import {HydratedDocument} from 'mongoose';
 import {formatError} from '../utils';
 import dbConnect from "../utils/connectDb";
+import Survey from "../models/Survey";
 
 export interface ExtendedApiRequest extends NextApiRequest {
     user: HydratedDocument<UserI>
@@ -24,6 +25,7 @@ const authMiddleware = (handler: Handler) => async (req: ExtendedApiRequest, res
         return res.status(401).json(formatError('You are unauthorized to make this request'));
     }
     req.user = user;
+    await req.user.populate<{surveys: number}>('surveys');
     return handler(req, res);
 }
 

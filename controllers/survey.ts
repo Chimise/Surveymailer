@@ -13,8 +13,14 @@ import {
 import { ExtendedApiRequest } from "../middlewares/auth";
 import Survey, { Survey as SurveyI } from "../models/Survey";
 import Recipient from "../models/Recipient";
+import channels from "../pusher/server";
 
 const MAX_ITEMS = 5;
+
+const uniqueEmails = (emails: string[]) => {
+  const emailSet = new Set(emails);
+  return Array.from(emailSet.values());
+};
 
 const createSurveySchema = yup.object({
   title: yup.string().required("Please enter the title of the survey"),
@@ -134,20 +140,26 @@ export const findRecipients = async (
   req: ExtendedApiRequest,
   res: NextApiResponse
 ) => {
-  const id = req.query.id as string;
-  const { _limit, _page } = await findSurveySchema
-    .omit(["_sort"])
-    .validate(req.query);
-  const survey = await Survey.findOne({ user: req.user._id, _id: id });
-  if (!survey) {
-    return res.status(404).json(formatError("Survey not found"));
+  try {
+    const id = req.query.id as string;
+    const { _limit, _page } = await findSurveySchema
+      .omit(["_sort"])
+      .validate(req.query);
+    const survey = await Survey.findOne({ user: req.user._id, _id: id });
+    if (!survey) {
+      return res.status(404).json(formatError("Survey not found"));
+    }
+    const recipientCount = await Recipient.countDocuments({
+      survey: survey._id,
+    });
+    const { skip, ...data } = paginate(recipientCount, _page, _limit);
+    const recipients = await Recipient.find({ survey: survey.id })
+      .limit(_limit)
+      .skip(skip);
+    return res.json({ recipients, paginate: data });
+  } catch (error) {
+    handleError(res, error);
   }
-  const recipientCount = await Recipient.countDocuments({ survey: survey._id });
-  const { skip, ...data } = paginate(recipientCount, _page, _limit);
-  const recipients = await Recipient.find({ survey: survey.id })
-    .limit(_limit)
-    .skip(skip);
-  return res.json({ recipients, paginate: data });
 };
 
 export const surveyCompleted = async (
@@ -186,13 +198,19 @@ export const surveyCompleted = async (
   await recipient.save();
   await survey.save();
 
+  await channels.trigger('survey', 'response', {user: survey.user._id, recipient});
   res.redirect("/response");
 };
 
+
+
+
 export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
   try {
-    const { recipients, title, shipper, body, choices, subject } =
+    let { recipients, title, shipper, body, choices, subject } =
       await createSurveySchema.validate(req.body);
+
+    recipients = uniqueEmails(recipients);
 
     const shipper_email = `noreply@${shipper.toLowerCase()}.com`;
 
@@ -206,17 +224,20 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
         );
     }
 
+    // Represent choices with number codes
     const updatedChoices = choices.map((action, index) => {
       return {
         action,
         code: index,
       };
     });
+    //Generate a uuid for each recipient to be able to track each recipient
     const updatedRecipients = recipients.map((recipient) => {
       const uuid = uuidV4();
       return {
         recipient,
         uuid,
+        sent: false,
       };
     });
 
@@ -233,13 +254,33 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
       return transporter.sendMail(options);
     });
 
-    await Promise.all(userEmailPromises);
+    const allResponses = await Promise.allSettled(userEmailPromises);
+    let sentEmailCount = 0;
+
+    allResponses.forEach((response, index) => {
+      if (response.status === "rejected") {
+        updatedRecipients[index].sent = false;
+        return;
+      }
+      if (response.value.rejected[1]) {
+        updatedRecipients[index].sent = false;
+        return;
+      }
+      // Set the email status to true if email is accepted or is pending
+      sentEmailCount += 1;
+      updatedRecipients[index].sent = true;
+    });
+
+    // Send an error response if no email could be sent
+    if (sentEmailCount === 0) {
+      return res.status(500).send("Email could not be sent, please try again");
+    }
 
     const survey = new Survey({
       shipper,
       shipper_email,
       choices: updatedChoices,
-      recipients: recipients.length,
+      recipients: updatedRecipients.length,
       title,
       body,
       subject,
@@ -253,11 +294,12 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
           uuid: recipient.uuid,
           email: recipient.recipient,
           survey: survey._id,
+          sent: recipient.sent,
         };
       })
     );
 
-    req.user.credits -= totalCost;
+    req.user.credits -= sentEmailCount;
 
     const user = await req.user.save();
 

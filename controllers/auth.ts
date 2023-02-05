@@ -92,8 +92,6 @@ export const googleAuth = async (req: NextApiRequest, res: NextApiResponse) => {
       access_token,
       id_token
     );
-    console.log(picture);
-    console.log(data);
     let user = await User.findOne({ email, provider: "google" });
     if (!user) {
       user = new User({
