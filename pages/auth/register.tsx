@@ -79,6 +79,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               error={touched.name && errors.name}
+              placeholder='John Doe'
             />
             <Input
               type="email"
@@ -88,6 +89,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               error={touched.email && errors.email}
+              placeholder='johndoe@example.com'
             />
             <Input
               type="password"
@@ -97,6 +99,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               error={touched.password && errors.password}
+              placeholder='johnpassword'
             />
             <div className="py-2">
               <Button type="submit" isLoading={isSubmitting} full>

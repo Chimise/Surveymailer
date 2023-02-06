@@ -66,8 +66,8 @@ const SignInPage = () => {
             </div>
           </div>
           <form className="space-y-3 mt-3" onSubmit={handleSubmit}>
-            <Input type="email" label="Email address" name='email' onChange={handleChange} onBlur={handleBlur} value={values.email} error={touched.email && errors.email} />
-            <Input type="password" label="Password" name='password' onChange={handleChange} onBlur={handleBlur} value={values.password} error={touched.password && errors.password} />
+            <Input type="email" placeholder="johndoe@example.com" label="Email address" name='email' onChange={handleChange} onBlur={handleBlur} value={values.email} error={touched.email && errors.email} />
+            <Input type="password" placeholder="johnpassword" label="Password" name='password' onChange={handleChange} onBlur={handleBlur} value={values.password} error={touched.password && errors.password} />
             <div className="py-2">
               <Button type="submit" isLoading={isSubmitting} full>
                 Sign in
