@@ -37,7 +37,7 @@ const HomePage = () => {
           </div>
           <div className='flex flex-col sm:flex-row sm:justify-center space-y-3 sm:space-y-0 sm:space-x-3'>
               <Button variant="outlined">Learn More</Button>
-              <Link href='/auth/register' className="text-center items-center justify-center rounded-md bg-secondary text-white hover:bg-green-700 px-4 py-2">Sign up for free</Link>
+              <Link href='/auth/register' className="text-center inline-flex items-center justify-center rounded-md bg-secondary text-white hover:bg-green-700 px-4 py-2">Sign up for free</Link>
           </div>
           <p className="text-sm">No credit card required</p>
         </div>
