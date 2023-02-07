@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from 'next/link';
+import Head from "next/head";
 import DashboardLayout from "../../components/common/DashboardLayout";
 import Container from "../../components/ui/Container";
 import Select from "../../components/ui/Select";
@@ -53,6 +54,9 @@ const DashboardPage = () => {
 
   return (
     <div>
+      <Head>
+        <title>Dashboard</title>
+      </Head>
       <div className="h-32 bg-primary"></div>
       <section>
         <Container className="bg-white -mt-10 rounded-md shadow-sm" narrow>

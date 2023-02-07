@@ -20,7 +20,6 @@ const HomePage = () => {
           content="Send surveys to your customer, get and analyze feedback and grow your customers"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       <section className={cn('bg-primary py-10 text-center')}>
         <div className="space-y-6 mx-auto w-[70%] max-w-[500px] text-white">

@@ -2,6 +2,7 @@ import React from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useRouter } from "next/router";
+import Head from 'next/head';
 import DashboardLayout from "../../../components/common/DashboardLayout";
 import DraggableField from "../../../components/common/DraggableField";
 import Input from "../../../components/ui/Input";
@@ -96,6 +97,9 @@ const CreateSurveyPage = () => {
 
   return (
     <div className="w-full h-full pt-32 pb-10">
+      <Head>
+        <title>Create Survey</title>
+      </Head>
       <div className="flex items-center justify-center md:h-full">
         <div className="h-auto w-[85%] bg-white shadow-sm md:min-h-[85%] md:w-[90%]">
           <form onSubmit={handleSubmit} className="flex flex-wrap p-4">

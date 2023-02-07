@@ -3,6 +3,7 @@ import { skipToken } from "@reduxjs/toolkit/query/react";
 import { useRouter } from "next/router";
 import moment from "moment";
 import Link from 'next/link';
+import Head from 'next/head';
 import {ArrowLongLeftIcon} from '@heroicons/react/24/solid'
 import { useGetSurveyQuery, useGetRecipientsQuery } from "../../../store/queries/survey";
 import Loading from "../../../components/common/Loading";
@@ -73,6 +74,9 @@ const SurveyPage = () => {
   if (!survey) {
     return (
       <div className="w-full h-full flex items-center justify-center">
+        <Head>
+          <title>Not Found</title>
+        </Head>
         <span className="text-gray-700 font-medium">Survey not found</span>
       </div>
     );
@@ -80,6 +84,9 @@ const SurveyPage = () => {
 
   return (
     <div className="w-full pt-14">
+      <Head>
+        <title>{survey.title}</title>
+      </Head>
       <div className="bg-white py-2 shadow-sm">
         <Container fluid className="w-full h-full">
         <Link href='/dashboard' className="flex items-center space-x-2"><ArrowLongLeftIcon className="w-5 h-7"  /> <span className="text-sm">Back to Surveys</span></Link>

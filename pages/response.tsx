@@ -1,8 +1,14 @@
 import React from "react";
+import Head from 'next/head';
 import CheckIcon from "../components/icons/CheckIcon";
 
 const SurveyResponsePage = () => {
   return (
+    <>
+    <Head>
+      <title>Response Page</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </Head>
     <div className="w-screen h-screen flex overflow-hidden items-center justify-center">
       <div className="w-full max-w-2xl flex items-center justify-center flex-wrap">
         <div className="max-w-md md:w-1/2 p-2">
@@ -13,6 +19,7 @@ const SurveyResponsePage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

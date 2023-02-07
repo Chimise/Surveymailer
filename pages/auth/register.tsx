@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import cn from "classnames";
+import Head from 'next/head';
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useRouter } from "next/router";
@@ -42,6 +43,10 @@ const RegisterPage = () => {
       }),
     });
   return (
+    <>
+    <Head>
+      <title>Register</title>
+    </Head>
     <div className="w-full h-full bg-slate-100 flex items-center justify-center">
       <div className="w-[86%] max-w-sm space-y-3">
         <div className="space-y-1 text-center">
@@ -110,6 +115,7 @@ const RegisterPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

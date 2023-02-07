@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import DashboardLayout from "../../components/common/DashboardLayout";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import * as yup from "yup";
 import Script from "next/script";
 import Input from "../../components/ui/Input";
@@ -54,6 +55,9 @@ const FundPage = () => {
 
   return (
     <div className="h-full w-full flex items-center justify-center">
+      <Head>
+        <title>Fund Account</title>
+      </Head>
       <Script
         src="https://js.paystack.co/v1/inline.js"
         strategy="afterInteractive"
