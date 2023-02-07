@@ -1,23 +1,36 @@
-import React, { PointerEvent} from "react";
+import React, { PointerEvent, useEffect, useRef } from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import { Disclosure } from "@headlessui/react";
 import cn from "classnames";
 import { GridIcon } from "../../icons";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import Input from '../../ui/Input';
+import Input from "../../ui/Input";
 
 interface DraggableProps {
-  action: {value: string; id: number; error: string | null; touched: boolean}
+  action: { value: string; id: number; error: string | null; touched: boolean };
   constraints: React.MutableRefObject<HTMLDivElement | null>;
   onChange: (evt: React.ChangeEvent<HTMLInputElement>, id: number) => void;
   onBlur: (id: number) => void;
   onDelete: (id: number) => void;
 }
 
-const placeholders = ['Very Unhappy', 'Unhappy', 'Neutral', 'Happy', 'Very Happy']
+const placeholders = [
+  "Very Unhappy",
+  "Unhappy",
+  "Neutral",
+  "Happy",
+  "Very Happy",
+];
 
-const Draggable = ({ action: {value, id, error, touched}, constraints, onChange, onBlur, onDelete }: DraggableProps) => {
+const Draggable = ({
+  action: { value, id, error, touched },
+  constraints,
+  onChange,
+  onBlur,
+  onDelete,
+}: DraggableProps) => {
   const controls = useDragControls();
+  const dragElementRef = useRef<HTMLElement | null>(null);
   const pointerDownHandler = (
     event: PointerEvent<Element>,
     open: boolean,
@@ -30,10 +43,25 @@ const Draggable = ({ action: {value, id, error, touched}, constraints, onChange,
       close();
     }
   };
+
+  useEffect(() => {
+    const touchHandler: React.TouchEventHandler<HTMLElement> = (e) => e.preventDefault();
+      const dragElement = dragElementRef.current;
+      if(dragElement) {
+        //@ts-ignore
+        dragElement.addEventListener('touchstart', touchHandler, {passive: false});
+      }
+      return () => {
+        //@ts-ignore
+        dragElement?.removeEventListener('touchstart', touchHandler, {passive: false});
+      }
+    
+  }, [dragElementRef])
+
   return (
     <Reorder.Item
       dragConstraints={constraints}
-      dragElastic={0.2}
+      dragElastic={0.4}
       value={id}
       as="div"
       className="w-full bg-white group"
@@ -64,17 +92,32 @@ const Draggable = ({ action: {value, id, error, touched}, constraints, onChange,
                 onClick={(evt) => evt.stopPropagation()}
                 className="flex items-center text-gray-500 space-x-4"
               >
-                <TrashIcon className="w-4 h-4" onClick={() => onDelete(id)} />
-                <GridIcon
-                  className="w-4 h-4"
+                <span
+                  className="w-5 h-5 md:w-4 md:h-4"
+                  onClick={() => onDelete(id)}
+                >
+                  <TrashIcon className="w-full h-full" />
+                </span>
+                <span
+                  className="w-5 h-5 md:w-4 md:h-5"
                   onPointerDown={(event) =>
                     pointerDownHandler(event, open, close)
                   }
-                />
+                  ref={dragElementRef}
+                >
+                  <GridIcon className="w-full h-full" />
+                </span>
               </div>
             </Disclosure.Button>
             <Disclosure.Panel className="px-6 py-5 md:px-10 text-sm text-gray-500">
-              <Input error={touched && error!} className='text-black' placeholder={placeholders[id % placeholders.length]} onChange={(evt) => onChange(evt, id)} value={value} onBlur={() => onBlur(id)} />
+              <Input
+                error={touched && error!}
+                className="text-black"
+                placeholder={placeholders[id % placeholders.length]}
+                onChange={(evt) => onChange(evt, id)}
+                value={value}
+                onBlur={() => onBlur(id)}
+              />
             </Disclosure.Panel>
           </>
         )}

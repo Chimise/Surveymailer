@@ -47,7 +47,7 @@ const SurveyPreview = ({ show, onClose, data }: SurveyPreviewProps) => {
                 <div className="flex-1 truncate">
                   <h6 className="font-medium text-sm md:text-base text-black ">
                     {data.shipper}{" "}
-                    <span className="inline-block align-middle text-xs font-light text-slate-700">
+                    <span className="hidden md:inline-block align-middle text-xs font-light text-slate-700">
                       {`<`}no-reply@{data.shipper.toLowerCase()}.com{`>`}
                     </span>
                   </h6>
