@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SurveyMailer Application
 
-## Getting Started
+Businesses usually need to get feedbacks from their customers about services they offer to further improve them. One of the ways to get the these feedbacks is by sending email surveys to your customers. This Next.js fullstack application provides simple functionalities for sending email surveys, tracking responses from the sent surveys in real time using websockets, provides interface for viewing feedbacks graphically, online payment using Paystack, previewing surveys before sending, password based authentication and google OAuth, sorting sent surveys by different fields and pagination.
+## Demo
+Here is a working live demo: [https://survey-mailer.vercel.app/](https://survey-mailer.vercel.app/)
 
-First, run the development server:
+## Usage
+To run the project locally, follow these steps below:
+* Install a mongodb database on your computer [if not already installed](https://www.mongodb.com/docs/manual/installation/).
+* Install [Node.js](https://nodejs.org/en/download/) if not already installed.
+* Clone this repository, create an .env.local file in the root folder and add the following enviromental variables
+    * **MONGODB_URI** - A standard mongodb url connection string to connect to the mongodb database.
+    * **JWT_TOKEN** - A random string to be used to generate the jwt token.
+    * **GOOGLE_CLIENT_ID** & **GOOGLE_CLIENT_SECRET** - Can be gotten from Google Cloud Platform Console, [see details here](https://support.google.com/cloud/answer/6158849?hl=en), set your callback url to ```localhost:3000/api/auth/google/callback``` if your app is running on the default port or replace the port with the custom port you are using.
+    * **MAIL_USERNAME** & **MAIL_PASSWORD** - The mail username can be any valid gmail address and the password can be [generated](https://support.google.com/mail/answer/185833?hl=en).
+    * **NEXT_PUBLIC_PAYSTACK** & **PAYSTACK_SECRET** - paystack public and secret key [see more](https://support.paystack.com/hc/en-us/articles/360011508199-How-do-I-generate-new-API-keys-).
+    * **PUSHER_PUBLIC_KEY** & **PUSHER_SECRET_KEY** - Obtained from pusher dashboard after creating a new project[create account to get started](https://dashboard.pusher.com/accounts/sign_up)
+    * **PUSHER_CLUSTER** & **PUSHER_APP_ID** - Also obtained from pusher dashboard
+    * **NEXT_PUBLIC_PUSHER_KEY** & **NEXT_PUBLIC_PUSHER_CLUSTER** - The same as the pusher public key and cluster respectively to be used by the client.
+* Install the dependencies by running ```npm install``` and run the command ```npm run dev``` to start up your development server.
+* Visit [http://localhost:3000](http://localhost:3000) to view the homepage of the web application.
 
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Technologies
+Project was created with:
+* [Next.js](https://nextjs.org/)
+* [MongoDB](https://www.mongodb.com/)
+* [Mongoose](https://mongoosejs.com/)
+* [Tailwind CSS](https://tailwindcss.com/)
+* [Redux-toolkit and RTK Query](https://redux-toolkit.js.org/)
+* [TypeScript](https://www.typescriptlang.org/)
