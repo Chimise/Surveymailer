@@ -1,6 +1,7 @@
-import mongoose, {Schema, Types, Model, HydratedDocument} from "mongoose";
+import mongoose, { Schema, Types, Model, HydratedDocument } from "mongoose";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import testUser from "../testUser";
 
 export interface User {
     googleId?: string;
@@ -17,11 +18,15 @@ export interface User {
 
 interface UserMethods {
     generateToken(): string;
-    toJSON(): Pick<User, 'email'|'name'|'provider'|'credits'>;
+    toJSON(): Pick<User, 'email' | 'name' | 'provider' | 'credits'>;
     verifyPassword: (enteredPassword: string) => Promise<boolean>;
 }
 
-type UserModel = Model<User, {}, UserMethods>
+type UserModel = Model<User, {}, UserMethods> & {
+    isTestUser(data: { email: string, password: string }): boolean;
+    createTestUser(): HydratedDocument<User> & UserMethods;
+}
+
 const userSchema = new Schema<User, UserModel, UserMethods>({
     googleId: {
         type: String
@@ -60,7 +65,7 @@ userSchema.virtual('surveys', {
     count: true
 });
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     const user = this;
 
     if (user.isModified('password')) {
@@ -69,14 +74,14 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
-userSchema.methods.generateToken =  function (this: HydratedDocument<User>) {
+userSchema.methods.generateToken = function (this: HydratedDocument<User>) {
     const _id = this._id;
-    const token = jwt.sign({_id, googleId: this.googleId}, process.env.JWT_SECRET!, {expiresIn: '24h'});
+    const token = jwt.sign({ _id, googleId: this.googleId }, process.env.JWT_SECRET!, { expiresIn: '24h' });
     return token;
 }
 
-userSchema.method('toJSON', function (this: HydratedDocument<User>){
-    const userObject = this.toObject({virtuals: true});
+userSchema.method('toJSON', function (this: HydratedDocument<User>) {
+    const userObject = this.toObject({ virtuals: true });
     delete userObject.password;
     delete userObject.googleId;
     return userObject;
@@ -87,8 +92,19 @@ userSchema.method('verifyPassword', async function (this: HydratedDocument<User>
     return isMatch;
 })
 
+// Check if the user is a test User
+userSchema.static('isTestUser', function ({ email, password }: { email: string, password: string }) {
+    return email === testUser.email && password === testUser.password;
+})
 
-
+// Create a test user if it does not already exist
+userSchema.static('createTestUser', async function () {
+    let user: HydratedDocument<User> & UserMethods | null = await this.findOne({ email: testUser.email, password: testUser.password, provider: 'local' });
+    if (!user) {
+        user = await this.create(testUser);
+    }
+    return user;
+})
 
 //@ts-ignore
 export default mongoose.models.User as UserModel || mongoose.model<User, UserModel>('User', userSchema);

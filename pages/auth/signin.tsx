@@ -12,6 +12,7 @@ import GoogleIcon from "../../components/icons/GoogleIcon";
 import { loginUser } from "../../store/auth";
 import { useAppDispatch } from "../../store";
 import useAlert from "../../hooks/useAlert";
+import testUser from "../../testUser";
 
 const SignInPage = () => {
   const dispatch = useAppDispatch();
@@ -28,8 +29,8 @@ const SignInPage = () => {
     isSubmitting,
   } = useFormik({
     initialValues: {
-      email: "",
-      password: "",
+      email: testUser.email,
+      password: testUser.password,
     },
     async onSubmit(values) {
       const data = await dispatch(loginUser(values));

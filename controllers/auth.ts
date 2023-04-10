@@ -44,6 +44,13 @@ const googleAuthSchema = yup.object({
 export const register = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const body = await registerSchema.validate(req.body);
+
+    if (User.isTestUser({ email: body.email, password: body.password })) {
+      const user = await User.createTestUser();
+      const token = user.generateToken();
+      return res.json({ user, token });
+    }
+
     const user = await User.findOne({ email: body.email, provider: "local" });
     if (user) {
       return res
@@ -64,6 +71,12 @@ export const register = async (req: NextApiRequest, res: NextApiResponse) => {
 export const login = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const { email, password } = await loginSchema.validate(req.body);
+    // Check if the user is a test user and skip all the other checks
+    if (User.isTestUser({ email, password })) {
+      const user = await User.createTestUser();
+      const token = user.generateToken();
+      return res.json({ user, token });
+    }
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json(formatError("Invalid credentials"));

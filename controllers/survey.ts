@@ -83,6 +83,8 @@ export const find = async (req: ExtendedApiRequest, res: NextApiResponse) => {
     const [field, order] = getSortField(_sort);
     const surveyCounts = await Survey.countDocuments({ user: req.user.id });
     const { skip, ...data } = paginate(surveyCounts, _page, _limit);
+
+    // Sort field by surveys with the highest responses
     if (field === "responses") {
       const aggregatedData: Array<SurveyI> = await Survey.aggregate([
         { $match: { user: new Types.ObjectId(req.user._id) } },
@@ -210,6 +212,7 @@ export const create = async (req: ExtendedApiRequest, res: NextApiResponse) => {
     let { recipients, title, shipper, body, choices, subject } =
       await createSurveySchema.validate(req.body);
 
+    // Remove duplicate emails
     recipients = uniqueEmails(recipients);
 
     const shipper_email = `noreply@${shipper.toLowerCase()}.com`;
