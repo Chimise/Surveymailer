@@ -1,7 +1,10 @@
 # SurveyMailer Application
 
 Businesses usually need to get feedbacks from their customers about services they offer to further improve them. One of the ways to get the these feedbacks is by sending email surveys to your customers. This Next.js fullstack application provides simple functionalities for sending email surveys, tracking responses from the sent surveys in real time using websockets, provides interface for viewing feedbacks graphically, online payment using Paystack, previewing surveys before sending, password based authentication and google OAuth, sorting sent surveys by different fields and pagination.
-## Demo
+## Video Demo
+https://github.com/Chimise/Surveymailer/assets/66853110/0a65950a-9e24-488e-9c6e-c13e7d703556
+
+## Live Demo
 Here is a working live demo: [https://survey-mailer.vercel.app/](https://survey-mailer.vercel.app/)
 
 ## Usage
