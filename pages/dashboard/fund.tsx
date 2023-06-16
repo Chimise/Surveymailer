@@ -60,7 +60,7 @@ const FundPage = () => {
       </Head>
       <Script
         src="https://js.paystack.co/v1/inline.js"
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
       />
       {showPayment && (
         <div className="w-[86%] bg-white rounded-sm shadow-sm max-w-xs p-4">
