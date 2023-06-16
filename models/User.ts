@@ -99,7 +99,7 @@ userSchema.static('isTestUser', function ({ email, password }: { email: string, 
 
 // Create a test user if it does not already exist
 userSchema.static('createTestUser', async function () {
-    let user: HydratedDocument<User> & UserMethods | null = await this.findOne({ email: testUser.email, password: testUser.password, provider: 'local' });
+    let user: HydratedDocument<User> & UserMethods | null = await this.findOne({ email: testUser.email, provider: 'local' });
     if (!user) {
         user = await this.create(testUser);
     }
